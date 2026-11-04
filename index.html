@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky Sovereign: Wings of Glory</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Three.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            user-select: none;
+            overflow: hidden;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .hud-glass {
+            background: rgba(8, 15, 30, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+        }
+        .hud-glass-danger {
+            background: rgba(30, 10, 15, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.2);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+        }
+        .glow-gold {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+        }
+        .glow-red {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+        }
+        /* Shake Effect for Combat */
+        .shake {
+            animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="w-screen h-screen relative select-none">
+
+    <!-- WebGL Canvas Container -->
+    <div id="canvas-container" class="absolute inset-0 z-0"></div>
+
+    <!-- MAIN MENU OVERLAY -->
+    <div id="main-menu" class="absolute inset-0 z-50 flex flex-col justify-between p-6 bg-slate-950/80 backdrop-blur-md transition-all duration-500">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-jet-fighter text-cyan-400 text-3xl animate-pulse"></i>
+                <h1 class="font-orbitron font-black text-xl md:text-3xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-200 to-amber-400">
+                    SKY SOVEREIGN
+                </h1>
+            </div>
+            <div class="flex items-center gap-4 text-xs md:text-sm">
+                <div class="bg-slate-900 border border-slate-700 px-4 py-1.5 rounded-full flex items-center gap-2">
+                    <i class="fa-solid fa-gem text-amber-400"></i>
+                    <span id="menu-credits" class="font-bold text-amber-300">0</span> Crystals
+                </div>
+                <button onclick="toggleAudio()" class="bg-slate-900 hover:bg-slate-800 text-cyan-400 p-2.5 rounded-full border border-cyan-500/40">
+                    <i id="menu-audio-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pilot Selection Carousel -->
+        <div class="max-w-4xl mx-auto w-full my-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="font-orbitron font-bold text-2xl md:text-4xl text-slate-100 tracking-wider">PILIH PILOT & PESAWAT TEMPURI</h2>
+                <p class="text-xs md:text-sm text-cyan-300 tracking-widest uppercase">Select your elite wing commander for mission deployment</p>
+            </div>
+
+            <!-- Pilot Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Pilot 1: Vance -->
+                <div onclick="selectPilot('vance')" id="card-vance" class="pilot-card cursor-pointer hud-glass rounded-2xl p-4 transition-all duration-300 border-cyan-400 glow-cyan relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 bg-cyan-950 border border-cyan-500 text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full">STEALTH LOCK</div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-14 h-14 rounded-full bg-cyan-900/60 border-2 border-cyan-400 flex justify-center items-center">
+                            <i class="fa-solid fa-user-astronaut text-2xl text-cyan-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-orbitron font-bold text-cyan-200">Capt. Vance</h3>
+                            <p class="text-xs text-cyan-400/80">Callsign: "Valkyrie"</p>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/50 pt-3">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Pesawat:</span>
+                            <span class="font-bold text-cyan-300">F-22 Aurora Sovereign</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Spesialisasi:</span>
+                            <span class="text-cyan-200">Burst Laser & Tracking</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Ultimate:</span>
+                            <span class="text-amber-300 font-bold">Orbital Strike Lock</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilot 2: Alexei -->
+                <div onclick="selectPilot('alexei')" id="card-alexei" class="pilot-card cursor-pointer hud-glass rounded-2xl p-4 transition-all duration-300 opacity-60 hover:opacity-100 border-slate-700 relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 bg-rose-950 border border-rose-500 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full">HEAVY IMPACT</div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-14 h-14 rounded-full bg-rose-900/60 border-2 border-rose-400 flex justify-center items-center">
+                            <i class="fa-solid fa-user-ninja text-2xl text-rose-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-orbitron font-bold text-rose-200">Major Alexei</h3>
+                            <p class="text-xs text-rose-400/80">Callsign: "Crimson"</p>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/50 pt-3">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Pesawat:</span>
+                            <span class="font-bold text-rose-300">SU-57 Red Nova</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Spesialisasi:</span>
+                            <span class="text-rose-200">Heavy Plasma Cannon</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Ultimate:</span>
+                            <span class="text-amber-300 font-bold">Plasma Shockwave Blast</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilot 3: Sophia -->
+                <div onclick="selectPilot('sophia')" id="card-sophia" class="pilot-card cursor-pointer hud-glass rounded-2xl p-4 transition-all duration-300 opacity-60 hover:opacity-100 border-slate-700 relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 bg-amber-950 border border-amber-500 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full">DRONE SUPPORT</div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-14 h-14 rounded-full bg-amber-900/60 border-2 border-amber-400 flex justify-center items-center">
+                            <i class="fa-solid fa-user-shield text-2xl text-amber-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-orbitron font-bold text-amber-200">Cmdr. Sophia</h3>
+                            <p class="text-xs text-amber-400/80">Callsign: "Zephyr"</p>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/50 pt-3">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Pesawat:</span>
+                            <span class="font-bold text-amber-300">Nightwing Phantom</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Spesialisasi:</span>
+                            <span class="text-amber-200">EMP Shield & Escort Drones</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Ultimate:</span>
+                            <span class="text-amber-300 font-bold">EMP Nova Storm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deployment Launch Button -->
+            <div class="text-center pt-4">
+                <button onclick="startGame()" class="font-orbitron font-black text-lg md:text-xl text-slate-950 bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-400 hover:from-cyan-300 hover:to-amber-300 px-10 py-4 rounded-full glow-cyan transition-all transform hover:scale-105 active:scale-95 shadow-xl flex items-center gap-3 mx-auto">
+                    <i class="fa-solid fa-plane-departure text-2xl"></i> LEPAS LANDAS SEKARANG
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center text-xs text-slate-500 font-medium">
+            Gunakan <span class="text-cyan-400">WASD / Panah</span> untuk manuver | <span class="text-cyan-400">Spasi / Klik Kiri</span> Tembak | <span class="text-amber-400">Shift</span> Barrel Roll (Dodge) | <span class="text-amber-400">F / Klik Kanan</span> Ultimate Skill
+        </div>
+    </div>
+
+    <!-- IN-GAME HUD OVERLAY -->
+    <div id="game-hud" class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-4 hidden">
+        <!-- Top HUD -->
+        <div class="flex justify-between items-start">
+            <!-- Health, Shield & Ult Meter -->
+            <div class="hud-glass rounded-2xl p-3 w-64 md:w-80 space-y-2 pointer-events-auto">
+                <div class="flex items-center gap-3">
+                    <div id="hud-pilot-icon" class="w-10 h-10 rounded-full border border-cyan-400 bg-slate-900 flex justify-center items-center text-cyan-300">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <div>
+                        <div id="hud-pilot-name" class="font-orbitron font-bold text-xs text-cyan-300">Capt. Vance</div>
+                        <div id="hud-ship-name" class="text-[10px] text-slate-400">F-22 Aurora Sovereign</div>
+                    </div>
+                </div>
+
+                <!-- HP Bar -->
+                <div class="space-y-0.5">
+                    <div class="flex justify-between text-[10px] font-bold">
+                        <span class="text-emerald-400">HULL INTEGRITY</span>
+                        <span id="hp-text" class="text-slate-200">100/100</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700">
+                        <div id="hp-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-300" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <!-- Shield Bar -->
+                <div class="space-y-0.5">
+                    <div class="flex justify-between text-[10px] font-bold">
+                        <span class="text-cyan-400">ENERGY SHIELD</span>
+                        <span id="shield-text" class="text-slate-200">100/100</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700">
+                        <div id="shield-bar" class="bg-gradient-to-r from-cyan-500 to-blue-400 h-full transition-all duration-300" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <!-- Ultimate Charge Bar -->
+                <div class="space-y-0.5">
+                    <div class="flex justify-between text-[10px] font-bold">
+                        <span class="text-amber-400">ULTIMATE READY</span>
+                        <span id="ult-text" class="text-amber-300">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700">
+                        <div id="ult-bar" class="bg-gradient-to-r from-amber-500 to-yellow-300 h-full transition-all duration-200" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Score & Mission Info -->
+            <div class="hud-glass rounded-2xl p-3 text-right space-y-1">
+                <div class="font-orbitron font-bold text-xs text-slate-400">SCORE</div>
+                <div id="score-val" class="font-orbitron font-black text-2xl md:text-3xl text-amber-300 tracking-wider">000000</div>
+                <div class="flex items-center justify-end gap-3 text-xs pt-1 border-t border-slate-800">
+                    <span class="text-cyan-300"><i class="fa-solid fa-crosshairs"></i> Kills: <span id="kill-count" class="font-bold">0</span></span>
+                    <span class="text-amber-300"><i class="fa-solid fa-gem"></i> Crystals: <span id="crystal-count" class="font-bold">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Warning / Dialogue Popup -->
+        <div id="warning-banner" class="hidden mx-auto hud-glass-danger rounded-xl px-6 py-2.5 text-center animate-bounce">
+            <h4 class="font-orbitron font-black text-rose-500 tracking-widest text-sm md:text-lg">WARNING: HEAVY GUNSHIP APPROACHING</h4>
+        </div>
+
+        <!-- Bottom Controls HUD & Active Buffs -->
+        <div class="flex justify-between items-end">
+            <!-- Skill Buttons for Touch/Desktop Indicators -->
+            <div class="flex gap-3 pointer-events-auto">
+                <button id="btn-dodge" onclick="triggerDodge()" class="w-12 h-12 md:w-14 md:h-14 hud-glass rounded-full flex flex-col justify-center items-center text-cyan-300 border-cyan-500 hover:bg-cyan-950 transition">
+                    <i class="fa-solid fa-rotate text-lg"></i>
+                    <span class="text-[9px] font-bold">DODGE</span>
+                </button>
+                <button id="btn-ult" onclick="triggerUltimate()" class="w-14 h-14 md:w-16 md:h-16 hud-glass rounded-full flex flex-col justify-center items-center text-amber-300 border-amber-500 hover:bg-amber-950 transition opacity-50 relative overflow-hidden">
+                    <i class="fa-solid fa-bolt text-xl"></i>
+                    <span class="text-[9px] font-bold">ULTIMATE</span>
+                </button>
+            </div>
+
+            <!-- In-game Pause Button -->
+            <button onclick="pauseGame()" class="pointer-events-auto bg-slate-900/90 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl border border-slate-700 text-xs font-bold font-orbitron">
+                <i class="fa-solid fa-pause mr-1"></i> PAUSE
+            </button>
+        </div>
+    </div>
+
+    <!-- PAUSE & VICTORY / GAME OVER MODAL -->
+    <div id="modal-screen" class="hidden absolute inset-0 z-50 flex justify-center items-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="hud-glass rounded-3xl p-6 md:p-8 max-w-md w-full text-center space-y-5 border-cyan-500/40 glow-cyan">
+            <h3 id="modal-title" class="font-orbitron font-black text-2xl md:text-3xl text-cyan-300 tracking-wider">GAME PAUSED</h3>
+            
+            <div id="modal-stats" class="space-y-2 bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-sm text-left">
+                <div class="flex justify-between"><span class="text-slate-400">Total Skor:</span> <span id="m-score" class="font-bold text-amber-300">0</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Musuh Dihancurkan:</span> <span id="m-kills" class="font-bold text-cyan-300">0</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Crystal Diperoleh:</span> <span id="m-crystals" class="font-bold text-amber-400">0</span></div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button id="btn-modal-resume" onclick="resumeGame()" class="font-orbitron font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl transition">
+                    LANJUTKAN PERTANDINGAN
+                </button>
+                <button onclick="quitToMenu()" class="font-orbitron font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl border border-slate-700 transition">
+                    KEMBALI KE MENU UTAMA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO & THREE JS GAME LOGIC ENGINE -->
+    <script>
+        // --- AUDIO SYNTHESIZER ENGINE (Web Audio API) ---
+        let audioCtx = null;
+        let isMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (isMuted) return;
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            if (type === 'laser') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.12);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'explosion') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.exponentialRampToValueAtTime(20, now + 0.35);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'ultimate') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(900, now + 0.6);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } else if (type === 'hit') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        }
+
+        function toggleAudio() {
+            isMuted = !isMuted;
+            const icon = document.getElementById('menu-audio-icon');
+            icon.className = isMuted ? "fa-solid fa-volume-xmark text-rose-400" : "fa-solid fa-volume-high text-cyan-400";
+        }
+
+        // --- GAME STATE & PILOT DATA ---
+        const pilots = {
+            vance: {
+                name: "Capt. Vance",
+                ship: "F-22 Aurora Sovereign",
+                color: 0x06b6d4, // Cyan
+                hp: 100,
+                shield: 100,
+                speed: 0.35,
+                fireRate: 120, // ms
+                ultName: "Orbital Laser Lock"
+            },
+            alexei: {
+                name: "Major Alexei",
+                ship: "SU-57 Red Nova",
+                color: 0xf43f5e, // Rose
+                hp: 140,
+                shield: 80,
+                speed: 0.3,
+                fireRate: 180,
+                ultName: "Plasma Shockwave"
+            },
+            sophia: {
+                name: "Cmdr. Sophia",
+                ship: "Nightwing Phantom",
+                color: 0xf59e0b, // Amber
+                hp: 90,
+                shield: 130,
+                speed: 0.4,
+                fireRate: 140,
+                ultName: "EMP Storm"
+            }
+        };
+
+        let selectedPilotKey = 'vance';
+        let gameState = {
+            running: false,
+            paused: false,
+            score: 0,
+            kills: 0,
+            crystals: 0,
+            hp: 100,
+            maxHp: 100,
+            shield: 100,
+            maxShield: 100,
+            ultCharge: 0, // 0 to 100
+            lastShootTime: 0,
+            isDodging: false,
+            dodgeTimer: 0
+        };
+
+        // --- THREE.JS ENGINE SETUP ---
+        let scene, camera, renderer;
+        let playerMesh, playerGroup;
+        let bullets = [];
+        let enemies = [];
+        let enemyBullets = [];
+        let crystals = [];
+        let particleEffects = [];
+
+        const keys = { w: false, a: false, s: false, d: false, space: false, shift: false, f: false };
+
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            container.innerHTML = '';
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x030712, 0.015);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 25, 20);
+            camera.lookAt(0, 0, -10);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+            dirLight.position.set(20, 40, 20);
+            scene.add(dirLight);
+
+            // Create Animated Cloud/Star Background Particles
+            createBackgroundClouds();
+        }
+
+        function createBackgroundClouds() {
+            const count = 300;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+
+            for (let i = 0; i < count * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 150;
+                positions[i + 1] = (Math.random() - 0.5) * 50 - 10;
+                positions[i + 2] = (Math.random() - 0.5) * 200 - 50;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({
+                color: 0x38bdf8,
+                size: 0.8,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const points = new THREE.Points(geometry, material);
+            points.name = 'clouds';
+            scene.add(points);
+        }
+
+        // --- PROCEDURAL PLAYER SHIP CREATION ---
+        function createPlayerShip(pilotKey) {
+            if (playerGroup) scene.remove(playerGroup);
+
+            playerGroup = new THREE.Group();
+
+            const pData = pilots[pilotKey];
+            const matColor = new THREE.MeshStandardMaterial({ color: pData.color, roughness: 0.3, metalness: 0.8 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 });
+            const glowMat = new THREE.MeshBasicMaterial({ color: pData.color });
+
+            // Main Fuselage Body
+            const bodyGeo = new THREE.ConeGeometry(0.8, 4, 5);
+            bodyGeo.rotateX(Math.PI / 2);
+            const fuselage = new THREE.Mesh(bodyGeo, matColor);
+            playerGroup.add(fuselage);
+
+            // Wings
+            const wingGeo = new THREE.BoxGeometry(4.5, 0.1, 1.8);
+            const wings = new THREE.Mesh(wingGeo, darkMat);
+            wings.position.set(0, 0, 0.5);
+            playerGroup.add(wings);
+
+            // Cockpit Glass
+            const cockpitGeo = new THREE.SphereGeometry(0.5, 8, 8);
+            cockpitGeo.scale(0.8, 0.5, 1.5);
+            const cockpitMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, transparent: true, opacity: 0.7 });
+            const cockpit = new THREE.Mesh(cockpitGeo, cockpitMat);
+            cockpit.position.set(0, 0.3, -0.3);
+            playerGroup.add(cockpit);
+
+            // Thruster Glow
+            const thrusterGeo = new THREE.CylinderGeometry(0.3, 0.1, 0.6, 8);
+            thrusterGeo.rotateX(Math.PI / 2);
+            const thruster = new THREE.Mesh(thrusterGeo, glowMat);
+            thruster.position.set(0, 0, 2.1);
+            playerGroup.add(thruster);
+
+            playerGroup.position.set(0, 0, 5);
+            scene.add(playerGroup);
+        }
+
+        // --- PROCEDURAL ENEMY SHIP CREATOR ---
+        function spawnEnemy(type = 'drone') {
+            const enemyGroup = new THREE.Group();
+            let hp = 30;
+
+            if (type === 'drone') {
+                const geo = new THREE.OctahedronGeometry(0.9);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.4 });
+                const mesh = new THREE.Mesh(geo, mat);
+                enemyGroup.add(mesh);
+                hp = 25;
+            } else if (type === 'gunship') {
+                const geo = new THREE.BoxGeometry(2.5, 1.2, 3);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xe11d48, metalness: 0.7 });
+                const mesh = new THREE.Mesh(geo, mat);
+                enemyGroup.add(mesh);
+
+                // Add Turret Wings
+                const wing = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 1), mat);
+                enemyGroup.add(wing);
+                hp = 120;
+            }
+
+            // Spawn Position
+            enemyGroup.position.set((Math.random() - 0.5) * 32, 0, -45);
+            scene.add(enemyGroup);
+
+            enemies.push({
+                group: enemyGroup,
+                type: type,
+                hp: hp,
+                maxHp: hp,
+                lastShoot: Date.now() + Math.random() * 1000
+            });
+        }
+
+        // --- CONTROLS & EVENT LISTENERS ---
+        window.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase();
+            if (k === 'w' || k === 'arrowup') keys.w = true;
+            if (k === 'a' || k === 'arrowleft') keys.a = true;
+            if (k === 's' || k === 'arrowdown') keys.s = true;
+            if (k === 'd' || k === 'arrowright') keys.d = true;
+            if (k === ' ') keys.space = true;
+            if (k === 'shift') triggerDodge();
+            if (k === 'f') triggerUltimate();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const k = e.key.toLowerCase();
+            if (k === 'w' || k === 'arrowup') keys.w = false;
+            if (k === 'a' || k === 'arrowleft') keys.a = false;
+            if (k === 's' || k === 'arrowdown') keys.s = false;
+            if (k === 'd' || k === 'arrowright') keys.d = false;
+            if (k === ' ') keys.space = false;
+        });
+
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+
+        // --- GAME ACTIONS ---
+        function selectPilot(key) {
+            selectedPilotKey = key;
+            document.querySelectorAll('.pilot-card').forEach(c => {
+                c.classList.remove('border-cyan-400', 'glow-cyan', 'opacity-100');
+                c.classList.add('opacity-60', 'border-slate-700');
+            });
+
+            const activeCard = document.getElementById(`card-${key}`);
+            activeCard.classList.remove('opacity-60', 'border-slate-700');
+            activeCard.classList.add('border-cyan-400', 'glow-cyan', 'opacity-100');
+
+            playSound('laser');
+        }
+
+        function startGame() {
+            initAudio();
+            initThreeJS();
+
+            const pData = pilots[selectedPilotKey];
+            gameState = {
+                running: true,
+                paused: false,
+                score: 0,
+                kills: 0,
+                crystals: 0,
+                hp: pData.hp,
+                maxHp: pData.hp,
+                shield: pData.shield,
+                maxShield: pData.shield,
+                ultCharge: 0,
+                lastShootTime: 0,
+                isDodging: false,
+                dodgeTimer: 0
+            };
+
+            // Update UI
+            document.getElementById('hud-pilot-name').innerText = pData.name;
+            document.getElementById('hud-ship-name').innerText = pData.ship;
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('game-hud').classList.remove('hidden');
+
+            createPlayerShip(selectedPilotKey);
+            updateHUD();
+
+            // Spawn Initial Enemies Loop
+            setInterval(() => {
+                if (gameState.running && !gameState.paused && enemies.length < 8) {
+                    const type = Math.random() > 0.75 ? 'gunship' : 'drone';
+                    spawnEnemy(type);
+                }
+            }, 1800);
+
+            requestAnimationFrame(animateLoop);
+        }
+
+        function shootBullet() {
+            if (!playerGroup) return;
+
+            const pData = pilots[selectedPilotKey];
+            const now = Date.now();
+            if (now - gameState.lastShootTime < pData.fireRate) return;
+
+            gameState.lastShootTime = now;
+            playSound('laser');
+
+            // Left & Right Gun positions
+            [-0.8, 0.8].forEach(offsetX => {
+                const bulletGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 6);
+                bulletGeo.rotateX(Math.PI / 2);
+                const bulletMat = new THREE.MeshBasicMaterial({ color: pData.color });
+                const bullet = new THREE.Mesh(bulletGeo, bulletMat);
+
+                bullet.position.set(
+                    playerGroup.position.x + offsetX,
+                    playerGroup.position.y,
+                    playerGroup.position.z - 1.5
+                );
+
+                scene.add(bullet);
+                bullets.push(bullet);
+            });
+        }
+
+        function triggerDodge() {
+            if (gameState.isDodging || !gameState.running) return;
+            gameState.isDodging = true;
+            gameState.dodgeTimer = 0;
+            playSound('ultimate');
+        }
+
+        function triggerUltimate() {
+            if (gameState.ultCharge < 100 || !gameState.running) return;
+            gameState.ultCharge = 0;
+            playSound('ultimate');
+            updateHUD();
+
+            // Screen Shake & Clear Enemies Ultimate Strike
+            document.getElementById('game-hud').classList.add('shake');
+            setTimeout(() => document.getElementById('game-hud').classList.remove('shake'), 400);
+
+            enemies.forEach((enemy) => {
+                createExplosion(enemy.group.position);
+                scene.remove(enemy.group);
+                gameState.score += 500;
+                gameState.kills++;
+            });
+            enemies = [];
+        }
+
+        function createExplosion(pos) {
+            playSound('explosion');
+            for (let i = 0; i < 12; i++) {
+                const particleMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+                const particle = new THREE.Mesh(new THREE.SphereGeometry(0.3), particleMat);
+                particle.position.copy(pos);
+                particle.userData = {
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: (Math.random() - 0.5) * 0.8,
+                    vz: (Math.random() - 0.5) * 0.8,
+                    life: 1.0
+                };
+                scene.add(particle);
+                particleEffects.push(particle);
+            }
+        }
+
+        // --- MAIN GAME LOOP ---
+        function animateLoop() {
+            if (!gameState.running) return;
+
+            if (!gameState.paused) {
+                // 1. Player Movement Logic
+                const speed = pilots[selectedPilotKey].speed;
+                if (keys.w && playerGroup.position.z > -15) playerGroup.position.z -= speed;
+                if (keys.s && playerGroup.position.z < 12) playerGroup.position.z += speed;
+                if (keys.a && playerGroup.position.x > -18) {
+                    playerGroup.position.x -= speed;
+                    playerGroup.rotation.z = Math.min(0.4, playerGroup.rotation.z + 0.05);
+                } else if (keys.d && playerGroup.position.x < 18) {
+                    playerGroup.position.x += speed;
+                    playerGroup.rotation.z = Math.max(-0.4, playerGroup.rotation.z - 0.05);
+                } else {
+                    playerGroup.rotation.z *= 0.9;
+                }
+
+                // Dodge Barrel Roll Animation
+                if (gameState.isDodging) {
+                    gameState.dodgeTimer += 0.2;
+                    playerGroup.rotation.z = gameState.dodgeTimer * Math.PI * 2;
+                    if (gameState.dodgeTimer >= 1) {
+                        gameState.isDodging = false;
+                        playerGroup.rotation.z = 0;
+                    }
+                }
+
+                // Automatic Shooting if Space Pressed
+                if (keys.space) shootBullet();
+
+                // 2. Move Bullets
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    const b = bullets[i];
+                    b.position.z -= 1.2;
+
+                    // Bullet Collision with Enemies
+                    for (let j = enemies.length - 1; j >= 0; j--) {
+                        const enemy = enemies[j];
+                        if (b.position.distanceTo(enemy.group.position) < 2.0) {
+                            enemy.hp -= 20;
+                            scene.remove(b);
+                            bullets.splice(i, 1);
+                            playSound('hit');
+
+                            if (enemy.hp <= 0) {
+                                createExplosion(enemy.group.position);
+                                scene.remove(enemy.group);
+                                enemies.splice(j, 1);
+                                gameState.score += 200;
+                                gameState.kills++;
+                                gameState.ultCharge = Math.min(100, gameState.ultCharge + 15);
+                                updateHUD();
+                            }
+                            break;
+                        }
+                    }
+
+                    if (b && b.position.z < -60) {
+                        scene.remove(b);
+                        bullets.splice(i, 1);
+                    }
+                }
+
+                // 3. Move & AI Enemies
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    const enemy = enemies[i];
+                    enemy.group.position.z += enemy.type === 'drone' ? 0.25 : 0.15;
+
+                    // Player Collision
+                    if (!gameState.isDodging && enemy.group.position.distanceTo(playerGroup.position) < 2.2) {
+                        takeDamage(20);
+                        createExplosion(enemy.group.position);
+                        scene.remove(enemy.group);
+                        enemies.splice(i, 1);
+                        continue;
+                    }
+
+                    if (enemy.group.position.z > 20) {
+                        scene.remove(enemy.group);
+                        enemies.splice(i, 1);
+                    }
+                }
+
+                // 4. Particles update
+                for (let i = particleEffects.length - 1; i >= 0; i--) {
+                    const p = particleEffects[i];
+                    p.position.x += p.userData.vx;
+                    p.position.y += p.userData.vy;
+                    p.position.z += p.userData.vz;
+                    p.userData.life -= 0.04;
+                    p.scale.multiplyScalar(0.95);
+
+                    if (p.userData.life <= 0) {
+                        scene.remove(p);
+                        particleEffects.splice(i, 1);
+                    }
+                }
+
+                // Animated Clouds Scroll Effect
+                const clouds = scene.getObjectByName('clouds');
+                if (clouds) {
+                    const pos = clouds.geometry.attributes.position.array;
+                    for (let i = 2; i < pos.length; i += 3) {
+                        pos[i] += 0.8;
+                        if (pos[i] > 30) pos[i] = -120;
+                    }
+                    clouds.geometry.attributes.position.needsUpdate = true;
+                }
+            }
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animateLoop);
+        }
+
+        function takeDamage(amount) {
+            if (gameState.shield > 0) {
+                gameState.shield = Math.max(0, gameState.shield - amount);
+            } else {
+                gameState.hp = Math.max(0, gameState.hp - amount);
+            }
+
+            playSound('hit');
+            updateHUD();
+
+            if (gameState.hp <= 0) {
+                gameOver();
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('hp-bar').style.width = `${(gameState.hp / gameState.maxHp) * 100}%`;
+            document.getElementById('hp-text').innerText = `${gameState.hp}/${gameState.maxHp}`;
+
+            document.getElementById('shield-bar').style.width = `${(gameState.shield / gameState.maxShield) * 100}%`;
+            document.getElementById('shield-text').innerText = `${gameState.shield}/${gameState.maxShield}`;
+
+            document.getElementById('ult-bar').style.width = `${gameState.ultCharge}%`;
+            document.getElementById('ult-text').innerText = `${gameState.ultCharge}%`;
+
+            const btnUlt = document.getElementById('btn-ult');
+            if (gameState.ultCharge >= 100) {
+                btnUlt.classList.remove('opacity-50');
+                btnUlt.classList.add('glow-gold', 'animate-pulse');
+            } else {
+                btnUlt.classList.add('opacity-50');
+                btnUlt.classList.remove('glow-gold', 'animate-pulse');
+            }
+
+            document.getElementById('score-val').innerText = gameState.score.toString().padStart(6, '0');
+            document.getElementById('kill-count').innerText = gameState.kills;
+            document.getElementById('crystal-count').innerText = gameState.crystals;
+        }
+
+        function pauseGame() {
+            gameState.paused = true;
+            document.getElementById('modal-title').innerText = "GAME PAUSED";
+            document.getElementById('m-score').innerText = gameState.score;
+            document.getElementById('m-kills').innerText = gameState.kills;
+            document.getElementById('m-crystals').innerText = gameState.crystals;
+            document.getElementById('modal-screen').classList.remove('hidden');
+        }
+
+        function resumeGame() {
+            gameState.paused = false;
+            document.getElementById('modal-screen').classList.add('hidden');
+        }
+
+        function gameOver() {
+            gameState.running = false;
+            document.getElementById('modal-title').innerText = "MISSION FAILED";
+            document.getElementById('modal-title').className = "font-orbitron font-black text-2xl md:text-3xl text-rose-500 tracking-wider";
+            document.getElementById('btn-modal-resume').classList.add('hidden');
+            document.getElementById('m-score').innerText = gameState.score;
+            document.getElementById('m-kills').innerText = gameState.kills;
+            document.getElementById('m-crystals').innerText = gameState.crystals;
+            document.getElementById('modal-screen').classList.remove('hidden');
+        }
+
+        function quitToMenu() {
+            gameState.running = false;
+            document.getElementById('modal-screen').classList.add('hidden');
+            document.getElementById('game-hud').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('btn-modal-resume').classList.remove('hidden');
+        }
+
+        // Initialize Menu View
+        window.onload = function() {
+            selectPilot('vance');
+        };
+    </script>
+</body>
+</html>
