@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky Sovereign: Wings of Glory</title>
+    <title>Sky Sovereign: Post-War Realism</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-    <!-- Three.js library -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         body {
             font-family: 'Rajdhani', sans-serif;
-            background-color: #030712;
-            color: #f3f4f6;
+            background-color: #020617;
+            color: #f8fafc;
             user-select: none;
             overflow: hidden;
         }
@@ -25,283 +25,284 @@
             font-family: 'Orbitron', sans-serif;
         }
         .hud-glass {
-            background: rgba(8, 15, 30, 0.75);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.15);
         }
         .hud-glass-danger {
-            background: rgba(30, 10, 15, 0.8);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.2);
+            background: rgba(69, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
         }
         .glow-cyan {
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.6);
         }
-        .glow-gold {
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+        .glow-orange {
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.6);
         }
-        .glow-red {
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
-        }
-        /* Shake Effect for Combat */
         .shake {
-            animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+            animation: shake 0.25s cubic-bezier(.36,.07,.19,.97) both;
         }
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            10%, 90% { transform: translate3d(-2px, 1px, 0); }
+            20%, 80% { transform: translate3d(3px, -2px, 0); }
+            30%, 50%, 70% { transform: translate3d(-5px, 3px, 0); }
+            40%, 60% { transform: translate3d(5px, -3px, 0); }
+        }
+        /* HUD Lock-on Box */
+        .lock-on-box {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border: 2px solid #ef4444;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: pulse-lock 0.4s infinite alternate;
+        }
+        @keyframes pulse-lock {
+            0% { transform: translate(-50%, -50%) scale(1); border-color: #ef4444; }
+            100% { transform: translate(-50%, -50%) scale(1.15); border-color: #f97316; }
         }
     </style>
 </head>
 <body class="w-screen h-screen relative select-none">
 
-    <!-- WebGL Canvas Container -->
+    <!-- 3D WebGL Canvas Container -->
     <div id="canvas-container" class="absolute inset-0 z-0"></div>
 
     <!-- MAIN MENU OVERLAY -->
-    <div id="main-menu" class="absolute inset-0 z-50 flex flex-col justify-between p-6 bg-slate-950/80 backdrop-blur-md transition-all duration-500">
-        <!-- Top Bar -->
-        <div class="flex justify-between items-center">
+    <div id="main-menu" class="absolute inset-0 z-50 flex flex-col justify-between p-6 bg-slate-950/90 backdrop-blur-md transition-all duration-500">
+        <!-- Header -->
+        <div class="flex justify-between items-center max-w-6xl mx-auto w-full">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-jet-fighter text-cyan-400 text-3xl animate-pulse"></i>
-                <h1 class="font-orbitron font-black text-xl md:text-3xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-200 to-amber-400">
-                    SKY SOVEREIGN
-                </h1>
-            </div>
-            <div class="flex items-center gap-4 text-xs md:text-sm">
-                <div class="bg-slate-900 border border-slate-700 px-4 py-1.5 rounded-full flex items-center gap-2">
-                    <i class="fa-solid fa-gem text-amber-400"></i>
-                    <span id="menu-credits" class="font-bold text-amber-300">0</span> Crystals
+                <i class="fa-solid fa-jet-fighter text-amber-500 text-3xl animate-pulse"></i>
+                <div>
+                    <h1 class="font-orbitron font-black text-2xl md:text-4xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-400 to-red-500">
+                        SKY SOVEREIGN
+                    </h1>
+                    <p class="text-[10px] md:text-xs text-orange-400/80 font-bold tracking-widest uppercase">POST-WAR CHRONICLES: RUINED EARTH</p>
                 </div>
-                <button onclick="toggleAudio()" class="bg-slate-900 hover:bg-slate-800 text-cyan-400 p-2.5 rounded-full border border-cyan-500/40">
-                    <i id="menu-audio-icon" class="fa-solid fa-volume-high"></i>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleAudio()" class="bg-slate-900 hover:bg-slate-800 text-orange-400 px-4 py-2 rounded-full border border-orange-500/40 text-xs font-bold flex items-center gap-2">
+                    <i id="menu-audio-icon" class="fa-solid fa-volume-high"></i> AUDIO SYSTEM
                 </button>
             </div>
         </div>
 
         <!-- Pilot Selection Carousel -->
-        <div class="max-w-4xl mx-auto w-full my-auto space-y-6">
-            <div class="text-center space-y-2">
-                <h2 class="font-orbitron font-bold text-2xl md:text-4xl text-slate-100 tracking-wider">PILIH PILOT & PESAWAT TEMPURI</h2>
-                <p class="text-xs md:text-sm text-cyan-300 tracking-widest uppercase">Select your elite wing commander for mission deployment</p>
+        <div class="max-w-5xl mx-auto w-full my-auto space-y-6">
+            <div class="text-center space-y-1">
+                <h2 class="font-orbitron font-bold text-xl md:text-3xl text-slate-100 tracking-wider">PILIH SQUADRON ACE PILOT</h2>
+                <p class="text-xs text-slate-400 tracking-widest uppercase">Deploy to clean up the ruined airspace over Sector 7</p>
             </div>
 
             <!-- Pilot Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <!-- Pilot 1: Vance -->
-                <div onclick="selectPilot('vance')" id="card-vance" class="pilot-card cursor-pointer hud-glass rounded-2xl p-4 transition-all duration-300 border-cyan-400 glow-cyan relative overflow-hidden group">
-                    <div class="absolute top-2 right-2 bg-cyan-950 border border-cyan-500 text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full">STEALTH LOCK</div>
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-14 h-14 rounded-full bg-cyan-900/60 border-2 border-cyan-400 flex justify-center items-center">
-                            <i class="fa-solid fa-user-astronaut text-2xl text-cyan-300"></i>
+                <div onclick="selectPilot('vance')" id="card-vance" class="pilot-card cursor-pointer hud-glass rounded-2xl p-5 transition-all duration-300 border-amber-500 glow-orange relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 bg-amber-950/80 border border-amber-500 text-amber-300 text-[9px] font-bold px-2.5 py-0.5 rounded-full">AIR SUPERIORITY</div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-14 h-14 rounded-xl bg-amber-950/80 border-2 border-amber-500 flex justify-center items-center">
+                            <i class="fa-solid fa-user-astronaut text-2xl text-amber-400"></i>
                         </div>
                         <div>
-                            <h3 class="font-orbitron font-bold text-cyan-200">Capt. Vance</h3>
-                            <p class="text-xs text-cyan-400/80">Callsign: "Valkyrie"</p>
+                            <h3 class="font-orbitron font-bold text-amber-200">Capt. Vance "Valkyrie"</h3>
+                            <p class="text-xs text-amber-400/80">Flight Leader - Apex Squadron</p>
                         </div>
                     </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/50 pt-3">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Pesawat:</span>
-                            <span class="font-bold text-cyan-300">F-22 Aurora Sovereign</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Spesialisasi:</span>
-                            <span class="text-cyan-200">Burst Laser & Tracking</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Ultimate:</span>
-                            <span class="text-amber-300 font-bold">Orbital Strike Lock</span>
-                        </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                        <div class="flex justify-between"><span class="text-slate-400">Jet:</span><span class="font-bold text-amber-300">F-22 Raptor Apex</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Main Cannon:</span><span class="text-slate-200">30mm Dual Gatling</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Special Tech:</span><span class="text-amber-300 font-bold">Orbital Carpet Lock</span></div>
                     </div>
                 </div>
 
                 <!-- Pilot 2: Alexei -->
-                <div onclick="selectPilot('alexei')" id="card-alexei" class="pilot-card cursor-pointer hud-glass rounded-2xl p-4 transition-all duration-300 opacity-60 hover:opacity-100 border-slate-700 relative overflow-hidden group">
-                    <div class="absolute top-2 right-2 bg-rose-950 border border-rose-500 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full">HEAVY IMPACT</div>
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-14 h-14 rounded-full bg-rose-900/60 border-2 border-rose-400 flex justify-center items-center">
-                            <i class="fa-solid fa-user-ninja text-2xl text-rose-300"></i>
+                <div onclick="selectPilot('alexei')" id="card-alexei" class="pilot-card cursor-pointer hud-glass rounded-2xl p-5 transition-all duration-300 opacity-60 hover:opacity-100 border-slate-700 relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 bg-red-950/80 border border-red-500 text-red-300 text-[9px] font-bold px-2.5 py-0.5 rounded-full">HEAVY INTERCEPTOR</div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-14 h-14 rounded-xl bg-red-950/80 border-2 border-red-500 flex justify-center items-center">
+                            <i class="fa-solid fa-user-ninja text-2xl text-red-400"></i>
                         </div>
                         <div>
-                            <h3 class="font-orbitron font-bold text-rose-200">Major Alexei</h3>
-                            <p class="text-xs text-rose-400/80">Callsign: "Crimson"</p>
+                            <h3 class="font-orbitron font-bold text-red-200">Major Alexei "Crimson"</h3>
+                            <p class="text-xs text-red-400/80">Veteran Dogfighter</p>
                         </div>
                     </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/50 pt-3">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Pesawat:</span>
-                            <span class="font-bold text-rose-300">SU-57 Red Nova</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Spesialisasi:</span>
-                            <span class="text-rose-200">Heavy Plasma Cannon</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Ultimate:</span>
-                            <span class="text-amber-300 font-bold">Plasma Shockwave Blast</span>
-                        </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                        <div class="flex justify-between"><span class="text-slate-400">Jet:</span><span class="font-bold text-red-300">Su-57 Felon Heavy</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Main Cannon:</span><span class="text-slate-200">Heavy Plasma Vulcan</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Special Tech:</span><span class="text-red-300 font-bold">Sonic Shockwave Surge</span></div>
                     </div>
                 </div>
 
                 <!-- Pilot 3: Sophia -->
-                <div onclick="selectPilot('sophia')" id="card-sophia" class="pilot-card cursor-pointer hud-glass rounded-2xl p-4 transition-all duration-300 opacity-60 hover:opacity-100 border-slate-700 relative overflow-hidden group">
-                    <div class="absolute top-2 right-2 bg-amber-950 border border-amber-500 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full">DRONE SUPPORT</div>
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-14 h-14 rounded-full bg-amber-900/60 border-2 border-amber-400 flex justify-center items-center">
-                            <i class="fa-solid fa-user-shield text-2xl text-amber-300"></i>
+                <div onclick="selectPilot('sophia')" id="card-sophia" class="pilot-card cursor-pointer hud-glass rounded-2xl p-5 transition-all duration-300 opacity-60 hover:opacity-100 border-slate-700 relative overflow-hidden group">
+                    <div class="absolute top-2 right-2 bg-cyan-950/80 border border-cyan-500 text-cyan-300 text-[9px] font-bold px-2.5 py-0.5 rounded-full">STEALTH & EMP</div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-14 h-14 rounded-xl bg-cyan-950/80 border-2 border-cyan-500 flex justify-center items-center">
+                            <i class="fa-solid fa-user-shield text-2xl text-cyan-400"></i>
                         </div>
                         <div>
-                            <h3 class="font-orbitron font-bold text-amber-200">Cmdr. Sophia</h3>
-                            <p class="text-xs text-amber-400/80">Callsign: "Zephyr"</p>
+                            <h3 class="font-orbitron font-bold text-cyan-200">Cmdr. Sophia "Zephyr"</h3>
+                            <p class="text-xs text-cyan-400/80">Electronic Warfare Specialist</p>
                         </div>
                     </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/50 pt-3">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Pesawat:</span>
-                            <span class="font-bold text-amber-300">Nightwing Phantom</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Spesialisasi:</span>
-                            <span class="text-amber-200">EMP Shield & Escort Drones</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Ultimate:</span>
-                            <span class="text-amber-300 font-bold">EMP Nova Storm</span>
-                        </div>
+                    <div class="space-y-1.5 text-xs text-slate-300 border-t border-slate-700/60 pt-3">
+                        <div class="flex justify-between"><span class="text-slate-400">Jet:</span><span class="font-bold text-cyan-300">Phantom Nightwing</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Main Cannon:</span><span class="text-slate-200">Pulse Energy Array</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Special Tech:</span><span class="text-cyan-300 font-bold">EMP Blast Disruption</span></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Deployment Launch Button -->
-            <div class="text-center pt-4">
-                <button onclick="startGame()" class="font-orbitron font-black text-lg md:text-xl text-slate-950 bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-400 hover:from-cyan-300 hover:to-amber-300 px-10 py-4 rounded-full glow-cyan transition-all transform hover:scale-105 active:scale-95 shadow-xl flex items-center gap-3 mx-auto">
-                    <i class="fa-solid fa-plane-departure text-2xl"></i> LEPAS LANDAS SEKARANG
+            <!-- Deployment Button -->
+            <div class="text-center pt-3">
+                <button onclick="startGame()" class="font-orbitron font-black text-lg md:text-xl text-slate-950 bg-gradient-to-r from-amber-500 via-orange-400 to-red-500 hover:from-amber-400 hover:to-red-400 px-12 py-4 rounded-full glow-orange transition-all transform hover:scale-105 active:scale-95 shadow-2xl flex items-center gap-3 mx-auto">
+                    <i class="fa-solid fa-plane-departure text-2xl"></i> MULAI MISI POST-WAR
                 </button>
             </div>
         </div>
 
-        <div class="text-center text-xs text-slate-500 font-medium">
-            Gunakan <span class="text-cyan-400">WASD / Panah</span> untuk manuver | <span class="text-cyan-400">Spasi / Klik Kiri</span> Tembak | <span class="text-amber-400">Shift</span> Barrel Roll (Dodge) | <span class="text-amber-400">F / Klik Kanan</span> Ultimate Skill
+        <div class="text-center text-xs text-slate-400 font-medium">
+            <span class="text-amber-400 font-bold">WASD / Panah:</span> Manuver Pitch & Roll | <span class="text-amber-400 font-bold">Spasi / Klik Kiri:</span> Vulcan Cannon | <span class="text-amber-400 font-bold">Shift:</span> Afterburner Speed Boost | <span class="text-amber-400 font-bold">F:</span> Special Tech | <span class="text-amber-400 font-bold">C:</span> Ubah Kamera Cockpit/Chase
         </div>
     </div>
 
-    <!-- IN-GAME HUD OVERLAY -->
+    <!-- IN-GAME REALISTIC HUD OVERLAY -->
     <div id="game-hud" class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-4 hidden">
-        <!-- Top HUD -->
+        <!-- Top HUD Bar -->
         <div class="flex justify-between items-start">
-            <!-- Health, Shield & Ult Meter -->
-            <div class="hud-glass rounded-2xl p-3 w-64 md:w-80 space-y-2 pointer-events-auto">
+            <!-- Health & Speed HUD -->
+            <div class="hud-glass rounded-2xl p-4 w-72 md:w-80 space-y-3 pointer-events-auto">
                 <div class="flex items-center gap-3">
-                    <div id="hud-pilot-icon" class="w-10 h-10 rounded-full border border-cyan-400 bg-slate-900 flex justify-center items-center text-cyan-300">
+                    <div id="hud-pilot-icon" class="w-10 h-10 rounded-xl border border-amber-500 bg-slate-900 flex justify-center items-center text-amber-400">
                         <i class="fa-solid fa-user-astronaut"></i>
                     </div>
                     <div>
-                        <div id="hud-pilot-name" class="font-orbitron font-bold text-xs text-cyan-300">Capt. Vance</div>
-                        <div id="hud-ship-name" class="text-[10px] text-slate-400">F-22 Aurora Sovereign</div>
+                        <div id="hud-pilot-name" class="font-orbitron font-bold text-xs text-amber-300">Capt. Vance</div>
+                        <div id="hud-ship-name" class="text-[10px] text-slate-400">F-22 Raptor Apex</div>
                     </div>
                 </div>
 
                 <!-- HP Bar -->
-                <div class="space-y-0.5">
+                <div class="space-y-1">
                     <div class="flex justify-between text-[10px] font-bold">
-                        <span class="text-emerald-400">HULL INTEGRITY</span>
+                        <span class="text-emerald-400">INTEGRITAS LAMBUNG</span>
                         <span id="hp-text" class="text-slate-200">100/100</span>
                     </div>
-                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700">
+                    <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700">
                         <div id="hp-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-300" style="width: 100%;"></div>
                     </div>
                 </div>
 
                 <!-- Shield Bar -->
-                <div class="space-y-0.5">
+                <div class="space-y-1">
                     <div class="flex justify-between text-[10px] font-bold">
-                        <span class="text-cyan-400">ENERGY SHIELD</span>
+                        <span class="text-cyan-400">PERISAI DEFLEKTOR</span>
                         <span id="shield-text" class="text-slate-200">100/100</span>
                     </div>
-                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700">
+                    <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700">
                         <div id="shield-bar" class="bg-gradient-to-r from-cyan-500 to-blue-400 h-full transition-all duration-300" style="width: 100%;"></div>
                     </div>
                 </div>
 
-                <!-- Ultimate Charge Bar -->
-                <div class="space-y-0.5">
+                <!-- Special Tech Bar -->
+                <div class="space-y-1">
                     <div class="flex justify-between text-[10px] font-bold">
-                        <span class="text-amber-400">ULTIMATE READY</span>
+                        <span class="text-amber-400">SPECIAL TECH CHARGE</span>
                         <span id="ult-text" class="text-amber-300">0%</span>
                     </div>
-                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700">
-                        <div id="ult-bar" class="bg-gradient-to-r from-amber-500 to-yellow-300 h-full transition-all duration-200" style="width: 0%;"></div>
+                    <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                        <div id="ult-bar" class="bg-gradient-to-r from-amber-500 to-orange-400 h-full transition-all duration-200" style="width: 0%;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Score & Mission Info -->
-            <div class="hud-glass rounded-2xl p-3 text-right space-y-1">
-                <div class="font-orbitron font-bold text-xs text-slate-400">SCORE</div>
-                <div id="score-val" class="font-orbitron font-black text-2xl md:text-3xl text-amber-300 tracking-wider">000000</div>
+            <!-- Cockpit Altitude & Speed Indicator (Center) -->
+            <div class="hud-glass rounded-xl px-6 py-2 text-center border-amber-500/30">
+                <div class="flex gap-8 font-orbitron text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[9px]">KECEPATAN</span>
+                        <span id="speed-indicator" class="text-amber-400 font-bold text-base">780 KM/H</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[9px]">KETINGGIAN</span>
+                        <span id="alt-indicator" class="text-cyan-400 font-bold text-base">1,450 M</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[9px]">KAMERA</span>
+                        <span id="cam-indicator" class="text-emerald-400 font-bold text-base">CHASE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mission Score & Radar Panel -->
+            <div class="hud-glass rounded-2xl p-4 text-right space-y-2">
+                <div class="font-orbitron font-bold text-[10px] text-slate-400">TARGET SEKTOR HANCUR</div>
+                <div id="score-val" class="font-orbitron font-black text-2xl text-amber-400 tracking-wider">000000</div>
                 <div class="flex items-center justify-end gap-3 text-xs pt-1 border-t border-slate-800">
-                    <span class="text-cyan-300"><i class="fa-solid fa-crosshairs"></i> Kills: <span id="kill-count" class="font-bold">0</span></span>
-                    <span class="text-amber-300"><i class="fa-solid fa-gem"></i> Crystals: <span id="crystal-count" class="font-bold">0</span></span>
+                    <span class="text-red-400"><i class="fa-solid fa-crosshairs"></i> Kills: <span id="kill-count" class="font-bold">0</span></span>
+                    <span class="text-amber-400"><i class="fa-solid fa-shield-halved"></i> Sector: <span id="sector-name" class="font-bold">Ruined Citadel</span></span>
                 </div>
             </div>
         </div>
 
-        <!-- Middle Warning / Dialogue Popup -->
-        <div id="warning-banner" class="hidden mx-auto hud-glass-danger rounded-xl px-6 py-2.5 text-center animate-bounce">
-            <h4 class="font-orbitron font-black text-rose-500 tracking-widest text-sm md:text-lg">WARNING: HEAVY GUNSHIP APPROACHING</h4>
+        <!-- Lock-on Box Graphic Container -->
+        <div id="lock-on-container"></div>
+
+        <!-- Radio Dialogue Subtitle Banner -->
+        <div id="radio-dialogue" class="mx-auto bg-slate-950/80 border border-amber-500/40 rounded-xl px-6 py-2 text-center max-w-xl transition-all duration-300">
+            <p class="text-xs font-bold text-amber-300 font-orbitron"><i class="fa-solid fa-walkie-talkie mr-2 animate-pulse text-amber-400"></i><span id="radio-text">HQ: Apex Squadron, bersihkan area daratan dari drone penembak musuh!</span></p>
         </div>
 
-        <!-- Bottom Controls HUD & Active Buffs -->
+        <!-- Bottom Controls & Skill Bar -->
         <div class="flex justify-between items-end">
-            <!-- Skill Buttons for Touch/Desktop Indicators -->
             <div class="flex gap-3 pointer-events-auto">
-                <button id="btn-dodge" onclick="triggerDodge()" class="w-12 h-12 md:w-14 md:h-14 hud-glass rounded-full flex flex-col justify-center items-center text-cyan-300 border-cyan-500 hover:bg-cyan-950 transition">
-                    <i class="fa-solid fa-rotate text-lg"></i>
-                    <span class="text-[9px] font-bold">DODGE</span>
+                <button id="btn-dodge" onclick="triggerBoost()" class="w-14 h-14 hud-glass rounded-2xl flex flex-col justify-center items-center text-amber-400 border-amber-500 hover:bg-amber-950/50 transition">
+                    <i class="fa-solid fa-gauge-high text-lg"></i>
+                    <span class="text-[9px] font-bold mt-0.5">BOOST</span>
                 </button>
-                <button id="btn-ult" onclick="triggerUltimate()" class="w-14 h-14 md:w-16 md:h-16 hud-glass rounded-full flex flex-col justify-center items-center text-amber-300 border-amber-500 hover:bg-amber-950 transition opacity-50 relative overflow-hidden">
+                <button id="btn-ult" onclick="triggerUltimate()" class="w-16 h-16 hud-glass rounded-2xl flex flex-col justify-center items-center text-orange-400 border-orange-500 hover:bg-orange-950/50 transition opacity-50 relative overflow-hidden">
                     <i class="fa-solid fa-bolt text-xl"></i>
-                    <span class="text-[9px] font-bold">ULTIMATE</span>
+                    <span class="text-[9px] font-bold mt-0.5">SPECIAL</span>
                 </button>
             </div>
 
-            <!-- In-game Pause Button -->
-            <button onclick="pauseGame()" class="pointer-events-auto bg-slate-900/90 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl border border-slate-700 text-xs font-bold font-orbitron">
-                <i class="fa-solid fa-pause mr-1"></i> PAUSE
+            <!-- Pause Button -->
+            <button onclick="pauseGame()" class="pointer-events-auto bg-slate-900/90 hover:bg-slate-800 text-slate-300 px-5 py-2.5 rounded-xl border border-slate-700 text-xs font-bold font-orbitron">
+                <i class="fa-solid fa-pause mr-1.5"></i> PAUSE
             </button>
         </div>
     </div>
 
-    <!-- PAUSE & VICTORY / GAME OVER MODAL -->
-    <div id="modal-screen" class="hidden absolute inset-0 z-50 flex justify-center items-center bg-slate-950/85 backdrop-blur-md p-4">
-        <div class="hud-glass rounded-3xl p-6 md:p-8 max-w-md w-full text-center space-y-5 border-cyan-500/40 glow-cyan">
-            <h3 id="modal-title" class="font-orbitron font-black text-2xl md:text-3xl text-cyan-300 tracking-wider">GAME PAUSED</h3>
+    <!-- PAUSE & MISSION OVER MODAL -->
+    <div id="modal-screen" class="hidden absolute inset-0 z-50 flex justify-center items-center bg-slate-950/90 backdrop-blur-md p-4">
+        <div class="hud-glass rounded-3xl p-8 max-w-md w-full text-center space-y-5 border-amber-500/40 glow-orange">
+            <h3 id="modal-title" class="font-orbitron font-black text-2xl md:text-3xl text-amber-400 tracking-wider">MISI DIHENTIKAN</h3>
             
-            <div id="modal-stats" class="space-y-2 bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-sm text-left">
-                <div class="flex justify-between"><span class="text-slate-400">Total Skor:</span> <span id="m-score" class="font-bold text-amber-300">0</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Musuh Dihancurkan:</span> <span id="m-kills" class="font-bold text-cyan-300">0</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Crystal Diperoleh:</span> <span id="m-crystals" class="font-bold text-amber-400">0</span></div>
+            <div id="modal-stats" class="space-y-2.5 bg-slate-900/90 p-4 rounded-2xl border border-slate-800 text-sm text-left">
+                <div class="flex justify-between"><span class="text-slate-400">Skor Sektor:</span> <span id="m-score" class="font-bold text-amber-300">0</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Musuh Dihancurkan:</span> <span id="m-kills" class="font-bold text-red-400">0</span></div>
             </div>
 
             <div class="flex flex-col gap-3">
-                <button id="btn-modal-resume" onclick="resumeGame()" class="font-orbitron font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl transition">
-                    LANJUTKAN PERTANDINGAN
+                <button id="btn-modal-resume" onclick="resumeGame()" class="font-orbitron font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 py-3 rounded-xl transition">
+                    LANJUTKAN MISI
                 </button>
                 <button onclick="quitToMenu()" class="font-orbitron font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl border border-slate-700 transition">
-                    KEMBALI KE MENU UTAMA
+                    KEMBALI KE HANGAR
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- AUDIO & THREE JS GAME LOGIC ENGINE -->
+    <!-- GAME LOGIC ENGINE -->
     <script>
-        // --- AUDIO SYNTHESIZER ENGINE (Web Audio API) ---
+        // --- AUDIO SYNTHESIZER SYSTEM ---
         let audioCtx = null;
         let isMuted = false;
 
@@ -316,256 +317,295 @@
             initAudio();
             const now = audioCtx.currentTime;
 
-            if (type === 'laser') {
+            if (type === 'vulcan') {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(100, now + 0.12);
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.frequency.setValueAtTime(450, now);
+                osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start(now);
-                osc.stop(now + 0.12);
+                osc.stop(now + 0.08);
             } else if (type === 'explosion') {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'square';
-                osc.frequency.setValueAtTime(120, now);
-                osc.frequency.exponentialRampToValueAtTime(20, now + 0.35);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(15, now + 0.5);
+                gain.gain.setValueAtTime(0.45, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start(now);
-                osc.stop(now + 0.35);
-            } else if (type === 'ultimate') {
+                osc.stop(now + 0.5);
+            } else if (type === 'lock') {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.exponentialRampToValueAtTime(900, now + 0.6);
-                gain.gain.setValueAtTime(0.4, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.frequency.setValueAtTime(900, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start(now);
-                osc.stop(now + 0.6);
-            } else if (type === 'hit') {
+                osc.stop(now + 0.1);
+            } else if (type === 'ultimate') {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.type = 'triangle';
+                osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(200, now);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.7);
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start(now);
-                osc.stop(now + 0.05);
+                osc.stop(now + 0.7);
             }
         }
 
         function toggleAudio() {
             isMuted = !isMuted;
             const icon = document.getElementById('menu-audio-icon');
-            icon.className = isMuted ? "fa-solid fa-volume-xmark text-rose-400" : "fa-solid fa-volume-high text-cyan-400";
+            icon.className = isMuted ? "fa-solid fa-volume-xmark text-red-400" : "fa-solid fa-volume-high text-amber-400";
         }
 
-        // --- GAME STATE & PILOT DATA ---
+        // --- PILOT & GAME STATE ---
         const pilots = {
             vance: {
                 name: "Capt. Vance",
-                ship: "F-22 Aurora Sovereign",
-                color: 0x06b6d4, // Cyan
+                ship: "F-22 Raptor Apex",
+                color: 0xf59e0b,
                 hp: 100,
                 shield: 100,
-                speed: 0.35,
-                fireRate: 120, // ms
-                ultName: "Orbital Laser Lock"
+                speed: 0.4,
+                fireRate: 90
             },
             alexei: {
                 name: "Major Alexei",
-                ship: "SU-57 Red Nova",
-                color: 0xf43f5e, // Rose
+                ship: "Su-57 Felon Heavy",
+                color: 0xef4444,
                 hp: 140,
-                shield: 80,
-                speed: 0.3,
-                fireRate: 180,
-                ultName: "Plasma Shockwave"
+                shield: 75,
+                speed: 0.35,
+                fireRate: 140
             },
             sophia: {
                 name: "Cmdr. Sophia",
-                ship: "Nightwing Phantom",
-                color: 0xf59e0b, // Amber
+                ship: "Phantom Nightwing",
+                color: 0x06b6d4,
                 hp: 90,
-                shield: 130,
-                speed: 0.4,
-                fireRate: 140,
-                ultName: "EMP Storm"
+                shield: 125,
+                speed: 0.45,
+                fireRate: 110
             }
         };
 
         let selectedPilotKey = 'vance';
+        let isCockpitView = false;
         let gameState = {
             running: false,
             paused: false,
             score: 0,
             kills: 0,
-            crystals: 0,
             hp: 100,
             maxHp: 100,
             shield: 100,
             maxShield: 100,
-            ultCharge: 0, // 0 to 100
+            ultCharge: 0,
             lastShootTime: 0,
-            isDodging: false,
-            dodgeTimer: 0
+            isBoosting: false,
+            boostTimer: 0
         };
 
-        // --- THREE.JS ENGINE SETUP ---
+        // --- THREE.JS ENGINE SCENE SETUP ---
         let scene, camera, renderer;
-        let playerMesh, playerGroup;
-        let bullets = [];
-        let enemies = [];
-        let enemyBullets = [];
-        let crystals = [];
-        let particleEffects = [];
-
-        const keys = { w: false, a: false, s: false, d: false, space: false, shift: false, f: false };
+        let playerGroup, contrailParticles = [];
+        let bullets = [], enemies = [], particleEffects = [], smokePillars = [];
+        const keys = { w: false, a: false, s: false, d: false, space: false, shift: false };
 
         function initThreeJS() {
             const container = document.getElementById('canvas-container');
             container.innerHTML = '';
 
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x030712, 0.015);
+            // Post-war dusk atmospheric fog
+            scene.fog = new THREE.FogExp2(0x1a0f0a, 0.012);
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 25, 20);
-            camera.lookAt(0, 0, -10);
-
+            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
             container.appendChild(renderer.domElement);
 
-            // Lighting Setup
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            // Realistic Dusk Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffaa77, 0.5);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
-            dirLight.position.set(20, 40, 20);
-            scene.add(dirLight);
+            const sunLight = new THREE.DirectionalLight(0xf97316, 2.0);
+            sunLight.position.set(50, 40, -100);
+            scene.add(sunLight);
 
-            // Create Animated Cloud/Star Background Particles
-            createBackgroundClouds();
+            // Construct Post-War Ruined Landscape Below
+            createRuinedPostWarTerrain();
         }
 
-        function createBackgroundClouds() {
-            const count = 300;
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(count * 3);
+        // --- GENERATE REALISTIC POST-WAR CITY RUINS TERRAIN ---
+        function createRuinedPostWarTerrain() {
+            const terrainGroup = new THREE.Group();
 
-            for (let i = 0; i < count * 3; i += 3) {
-                positions[i] = (Math.random() - 0.5) * 150;
-                positions[i + 1] = (Math.random() - 0.5) * 50 - 10;
-                positions[i + 2] = (Math.random() - 0.5) * 200 - 50;
+            // Ground Plane (Scorched Earth)
+            const groundGeo = new THREE.PlaneGeometry(600, 600, 40, 40);
+            const groundMat = new THREE.MeshStandardMaterial({
+                color: 0x1c1917,
+                roughness: 0.95,
+                metalness: 0.1
+            });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -25;
+            terrainGroup.add(ground);
+
+            // Destroyed City Buildings & Smoke Pillars
+            const buildingMat = new THREE.MeshStandardMaterial({ color: 0x292524, roughness: 0.9 });
+            const darkBuildingMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
+
+            for (let i = 0; i < 70; i++) {
+                const h = 8 + Math.random() * 28;
+                const w = 4 + Math.random() * 6;
+                const buildingGeo = new THREE.BoxGeometry(w, h, w);
+                const building = new THREE.Mesh(buildingGeo, Math.random() > 0.5 ? buildingMat : darkBuildingMat);
+
+                const x = (Math.random() - 0.5) * 350;
+                const z = (Math.random() - 0.5) * 450 - 50;
+                building.position.set(x, -25 + h / 2, z);
+                terrainGroup.add(building);
+
+                // Add Burning Smoke Pillars on some ruined buildings
+                if (Math.random() > 0.6) {
+                    createSmokePillar(x, -25 + h, z);
+                }
             }
 
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const material = new THREE.PointsMaterial({
-                color: 0x38bdf8,
-                size: 0.8,
-                transparent: true,
-                opacity: 0.6
-            });
-
-            const points = new THREE.Points(geometry, material);
-            points.name = 'clouds';
-            scene.add(points);
+            terrainGroup.name = "terrain";
+            scene.add(terrainGroup);
         }
 
-        // --- PROCEDURAL PLAYER SHIP CREATION ---
+        // --- SMOKE PILLAR GENERATOR ---
+        function createSmokePillar(x, y, z) {
+            const count = 12;
+            const smokeGroup = new THREE.Group();
+
+            for (let i = 0; i < count; i++) {
+                const geo = new THREE.SphereGeometry(1.5 + Math.random() * 2, 6, 6);
+                const mat = new THREE.MeshBasicMaterial({
+                    color: Math.random() > 0.4 ? 0x292524 : 0xf97316,
+                    transparent: true,
+                    opacity: 0.35 + Math.random() * 0.3
+                });
+                const p = new THREE.Mesh(geo, mat);
+                p.position.set(
+                    (Math.random() - 0.5) * 2,
+                    i * 2.5,
+                    (Math.random() - 0.5) * 2
+                );
+                smokeGroup.add(p);
+            }
+
+            smokeGroup.position.set(x, y, z);
+            scene.add(smokeGroup);
+            smokePillars.push(smokeGroup);
+        }
+
+        // --- CREATE DETAILED MODERN FIGHTER JET ---
         function createPlayerShip(pilotKey) {
             if (playerGroup) scene.remove(playerGroup);
 
             playerGroup = new THREE.Group();
 
             const pData = pilots[pilotKey];
-            const matColor = new THREE.MeshStandardMaterial({ color: pData.color, roughness: 0.3, metalness: 0.8 });
-            const darkMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 });
-            const glowMat = new THREE.MeshBasicMaterial({ color: pData.color });
+            const bodyMat = new THREE.MeshStandardMaterial({ color: pData.color, roughness: 0.25, metalness: 0.85 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.6 });
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, transparent: true, opacity: 0.7 });
 
-            // Main Fuselage Body
-            const bodyGeo = new THREE.ConeGeometry(0.8, 4, 5);
+            // Sleek Jet Fuselage
+            const bodyGeo = new THREE.ConeGeometry(0.9, 4.8, 6);
             bodyGeo.rotateX(Math.PI / 2);
-            const fuselage = new THREE.Mesh(bodyGeo, matColor);
-            playerGroup.add(fuselage);
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            playerGroup.add(body);
 
-            // Wings
-            const wingGeo = new THREE.BoxGeometry(4.5, 0.1, 1.8);
-            const wings = new THREE.Mesh(wingGeo, darkMat);
-            wings.position.set(0, 0, 0.5);
+            // Wings with Missile Pylons
+            const wingShape = new THREE.BoxGeometry(5.2, 0.08, 2.2);
+            const wings = new THREE.Mesh(wingShape, darkMat);
+            wings.position.set(0, 0, 0.4);
             playerGroup.add(wings);
 
-            // Cockpit Glass
+            // Double Tail Fins
+            [-0.9, 0.9].forEach(x => {
+                const tailGeo = new THREE.BoxGeometry(0.1, 1.2, 1.1);
+                const tail = new THREE.Mesh(tailGeo, bodyMat);
+                tail.position.set(x, 0.6, 1.8);
+                tail.rotation.z = x > 0 ? -0.2 : 0.2;
+                playerGroup.add(tail);
+            });
+
+            // Glass Cockpit Canopy
             const cockpitGeo = new THREE.SphereGeometry(0.5, 8, 8);
-            cockpitGeo.scale(0.8, 0.5, 1.5);
-            const cockpitMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, transparent: true, opacity: 0.7 });
-            const cockpit = new THREE.Mesh(cockpitGeo, cockpitMat);
-            cockpit.position.set(0, 0.3, -0.3);
+            cockpitGeo.scale(0.7, 0.55, 1.8);
+            const cockpit = new THREE.Mesh(cockpitGeo, glassMat);
+            cockpit.position.set(0, 0.35, -0.4);
             playerGroup.add(cockpit);
 
-            // Thruster Glow
-            const thrusterGeo = new THREE.CylinderGeometry(0.3, 0.1, 0.6, 8);
-            thrusterGeo.rotateX(Math.PI / 2);
-            const thruster = new THREE.Mesh(thrusterGeo, glowMat);
-            thruster.position.set(0, 0, 2.1);
-            playerGroup.add(thruster);
+            // Twin Afterburner Thrusters with Heat Glow
+            [-0.45, 0.45].forEach(x => {
+                const thrusterGeo = new THREE.CylinderGeometry(0.28, 0.15, 0.8, 8);
+                thrusterGeo.rotateX(Math.PI / 2);
+                const thrusterMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+                const thruster = new THREE.Mesh(thrusterGeo, thrusterMat);
+                thruster.position.set(x, 0, 2.5);
+                playerGroup.add(thruster);
+            });
 
             playerGroup.position.set(0, 0, 5);
             scene.add(playerGroup);
         }
 
-        // --- PROCEDURAL ENEMY SHIP CREATOR ---
+        // --- ENEMY COMBAT DRONES & JET SPAWNER ---
         function spawnEnemy(type = 'drone') {
             const enemyGroup = new THREE.Group();
             let hp = 30;
 
             if (type === 'drone') {
-                const geo = new THREE.OctahedronGeometry(0.9);
-                const mat = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.4 });
-                const mesh = new THREE.Mesh(geo, mat);
-                enemyGroup.add(mesh);
-                hp = 25;
+                const geo = new THREE.ConeGeometry(1.2, 3, 5);
+                geo.rotateX(-Math.PI / 2);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.7 });
+                enemyGroup.add(new THREE.Mesh(geo, mat));
+                hp = 35;
             } else if (type === 'gunship') {
-                const geo = new THREE.BoxGeometry(2.5, 1.2, 3);
-                const mat = new THREE.MeshStandardMaterial({ color: 0xe11d48, metalness: 0.7 });
-                const mesh = new THREE.Mesh(geo, mat);
-                enemyGroup.add(mesh);
-
-                // Add Turret Wings
-                const wing = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 1), mat);
-                enemyGroup.add(wing);
-                hp = 120;
+                const geo = new THREE.BoxGeometry(3.2, 1.4, 4);
+                const mat = new THREE.MeshStandardMaterial({ color: 0x78350f, metalness: 0.8 });
+                enemyGroup.add(new THREE.Mesh(geo, mat));
+                hp = 130;
             }
 
-            // Spawn Position
-            enemyGroup.position.set((Math.random() - 0.5) * 32, 0, -45);
+            enemyGroup.position.set((Math.random() - 0.5) * 45, Math.random() * 8, -60);
             scene.add(enemyGroup);
 
             enemies.push({
                 group: enemyGroup,
                 type: type,
                 hp: hp,
-                maxHp: hp,
-                lastShoot: Date.now() + Math.random() * 1000
+                maxHp: hp
             });
         }
 
-        // --- CONTROLS & EVENT LISTENERS ---
+        // --- KEYBOARD CONTROLS & CAMERA SWITCH ---
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
             if (k === 'w' || k === 'arrowup') keys.w = true;
@@ -573,8 +613,9 @@
             if (k === 's' || k === 'arrowdown') keys.s = true;
             if (k === 'd' || k === 'arrowright') keys.d = true;
             if (k === ' ') keys.space = true;
-            if (k === 'shift') triggerDodge();
+            if (k === 'shift') triggerBoost();
             if (k === 'f') triggerUltimate();
+            if (k === 'c') toggleCameraView();
         });
 
         window.addEventListener('keyup', (e) => {
@@ -586,27 +627,29 @@
             if (k === ' ') keys.space = false;
         });
 
-        window.addEventListener('resize', () => {
-            if (camera && renderer) {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-        });
+        function toggleCameraView() {
+            isCockpitView = !isCockpitView;
+            document.getElementById('cam-indicator').innerText = isCockpitView ? "COCKPIT" : "CHASE";
+            if (playerGroup) playerGroup.visible = !isCockpitView;
+            showRadioDialogue(isCockpitView ? "Piloting System: Cockpit HUD Engaged!" : "Piloting System: Dynamic Chase Cam Engaged!");
+        }
 
-        // --- GAME ACTIONS ---
+        function showRadioDialogue(msg) {
+            document.getElementById('radio-text').innerText = msg;
+        }
+
+        // --- GAMEPLAY ACTIONS ---
         function selectPilot(key) {
             selectedPilotKey = key;
             document.querySelectorAll('.pilot-card').forEach(c => {
-                c.classList.remove('border-cyan-400', 'glow-cyan', 'opacity-100');
+                c.classList.remove('border-amber-500', 'glow-orange', 'opacity-100');
                 c.classList.add('opacity-60', 'border-slate-700');
             });
 
             const activeCard = document.getElementById(`card-${key}`);
             activeCard.classList.remove('opacity-60', 'border-slate-700');
-            activeCard.classList.add('border-cyan-400', 'glow-cyan', 'opacity-100');
-
-            playSound('laser');
+            activeCard.classList.add('border-amber-500', 'glow-orange', 'opacity-100');
+            playSound('vulcan');
         }
 
         function startGame() {
@@ -619,18 +662,16 @@
                 paused: false,
                 score: 0,
                 kills: 0,
-                crystals: 0,
                 hp: pData.hp,
                 maxHp: pData.hp,
                 shield: pData.shield,
                 maxShield: pData.shield,
                 ultCharge: 0,
                 lastShootTime: 0,
-                isDodging: false,
-                dodgeTimer: 0
+                isBoosting: false,
+                boostTimer: 0
             };
 
-            // Update UI
             document.getElementById('hud-pilot-name').innerText = pData.name;
             document.getElementById('hud-ship-name').innerText = pData.ship;
             document.getElementById('main-menu').classList.add('hidden');
@@ -639,18 +680,17 @@
             createPlayerShip(selectedPilotKey);
             updateHUD();
 
-            // Spawn Initial Enemies Loop
+            // Enemy Spawner Interval
             setInterval(() => {
-                if (gameState.running && !gameState.paused && enemies.length < 8) {
-                    const type = Math.random() > 0.75 ? 'gunship' : 'drone';
-                    spawnEnemy(type);
+                if (gameState.running && !gameState.paused && enemies.length < 9) {
+                    spawnEnemy(Math.random() > 0.7 ? 'gunship' : 'drone');
                 }
-            }, 1800);
+            }, 1600);
 
             requestAnimationFrame(animateLoop);
         }
 
-        function shootBullet() {
+        function shootVulcan() {
             if (!playerGroup) return;
 
             const pData = pilots[selectedPilotKey];
@@ -658,31 +698,30 @@
             if (now - gameState.lastShootTime < pData.fireRate) return;
 
             gameState.lastShootTime = now;
-            playSound('laser');
+            playSound('vulcan');
 
-            // Left & Right Gun positions
-            [-0.8, 0.8].forEach(offsetX => {
-                const bulletGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 6);
-                bulletGeo.rotateX(Math.PI / 2);
-                const bulletMat = new THREE.MeshBasicMaterial({ color: pData.color });
-                const bullet = new THREE.Mesh(bulletGeo, bulletMat);
+            [-0.9, 0.9].forEach(offsetX => {
+                const bGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.4, 6);
+                bGeo.rotateX(Math.PI / 2);
+                const bMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+                const bullet = new THREE.Mesh(bGeo, bMat);
 
                 bullet.position.set(
                     playerGroup.position.x + offsetX,
                     playerGroup.position.y,
-                    playerGroup.position.z - 1.5
+                    playerGroup.position.z - 1.8
                 );
-
                 scene.add(bullet);
                 bullets.push(bullet);
             });
         }
 
-        function triggerDodge() {
-            if (gameState.isDodging || !gameState.running) return;
-            gameState.isDodging = true;
-            gameState.dodgeTimer = 0;
+        function triggerBoost() {
+            if (gameState.isBoosting || !gameState.running) return;
+            gameState.isBoosting = true;
+            gameState.boostTimer = 0;
             playSound('ultimate');
+            showRadioDialogue("Valkyrie 1: Afterburner engage! Maximizing speed!");
         }
 
         function triggerUltimate() {
@@ -691,14 +730,15 @@
             playSound('ultimate');
             updateHUD();
 
-            // Screen Shake & Clear Enemies Ultimate Strike
             document.getElementById('game-hud').classList.add('shake');
-            setTimeout(() => document.getElementById('game-hud').classList.remove('shake'), 400);
+            setTimeout(() => document.getElementById('game-hud').classList.remove('shake'), 450);
 
-            enemies.forEach((enemy) => {
+            showRadioDialogue("HQ: Orbital Precision Strike Confirmed! Area Cleared!");
+
+            enemies.forEach(enemy => {
                 createExplosion(enemy.group.position);
                 scene.remove(enemy.group);
-                gameState.score += 500;
+                gameState.score += 350;
                 gameState.kills++;
             });
             enemies = [];
@@ -706,114 +746,116 @@
 
         function createExplosion(pos) {
             playSound('explosion');
-            for (let i = 0; i < 12; i++) {
-                const particleMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
-                const particle = new THREE.Mesh(new THREE.SphereGeometry(0.3), particleMat);
-                particle.position.copy(pos);
-                particle.userData = {
-                    vx: (Math.random() - 0.5) * 0.8,
-                    vy: (Math.random() - 0.5) * 0.8,
-                    vz: (Math.random() - 0.5) * 0.8,
+            for (let i = 0; i < 16; i++) {
+                const mat = new THREE.MeshBasicMaterial({ color: Math.random() > 0.4 ? 0xf97316 : 0xef4444 });
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.35 + Math.random() * 0.3), mat);
+                p.position.copy(pos);
+                p.userData = {
+                    vx: (Math.random() - 0.5) * 0.9,
+                    vy: (Math.random() - 0.5) * 0.9,
+                    vz: (Math.random() - 0.5) * 0.9,
                     life: 1.0
                 };
-                scene.add(particle);
-                particleEffects.push(particle);
+                scene.add(p);
+                particleEffects.push(p);
             }
         }
 
-        // --- MAIN GAME LOOP ---
+        // --- MAIN RENDER & ANIMATION LOOP ---
         function animateLoop() {
             if (!gameState.running) return;
 
             if (!gameState.paused) {
-                // 1. Player Movement Logic
-                const speed = pilots[selectedPilotKey].speed;
-                if (keys.w && playerGroup.position.z > -15) playerGroup.position.z -= speed;
-                if (keys.s && playerGroup.position.z < 12) playerGroup.position.z += speed;
-                if (keys.a && playerGroup.position.x > -18) {
+                const speed = pilots[selectedPilotKey].speed * (gameState.isBoosting ? 1.8 : 1.0);
+
+                // Flight Movements
+                if (keys.w && playerGroup.position.z > -18) playerGroup.position.z -= speed;
+                if (keys.s && playerGroup.position.z < 14) playerGroup.position.z += speed;
+                if (keys.a && playerGroup.position.x > -22) {
                     playerGroup.position.x -= speed;
-                    playerGroup.rotation.z = Math.min(0.4, playerGroup.rotation.z + 0.05);
-                } else if (keys.d && playerGroup.position.x < 18) {
+                    playerGroup.rotation.z = Math.min(0.45, playerGroup.rotation.z + 0.06);
+                } else if (keys.d && playerGroup.position.x < 22) {
                     playerGroup.position.x += speed;
-                    playerGroup.rotation.z = Math.max(-0.4, playerGroup.rotation.z - 0.05);
+                    playerGroup.rotation.z = Math.max(-0.45, playerGroup.rotation.z - 0.06);
                 } else {
-                    playerGroup.rotation.z *= 0.9;
+                    playerGroup.rotation.z *= 0.88;
                 }
 
-                // Dodge Barrel Roll Animation
-                if (gameState.isDodging) {
-                    gameState.dodgeTimer += 0.2;
-                    playerGroup.rotation.z = gameState.dodgeTimer * Math.PI * 2;
-                    if (gameState.dodgeTimer >= 1) {
-                        gameState.isDodging = false;
-                        playerGroup.rotation.z = 0;
-                    }
+                // Smooth Camera Positioning (First Person Cockpit vs Third Person Chase)
+                if (isCockpitView) {
+                    camera.position.set(playerGroup.position.x, playerGroup.position.y + 0.4, playerGroup.position.z - 0.5);
+                    camera.lookAt(playerGroup.position.x, playerGroup.position.y, playerGroup.position.z - 30);
+                } else {
+                    camera.position.set(playerGroup.position.x * 0.4, playerGroup.position.y + 7, playerGroup.position.z + 14);
+                    camera.lookAt(playerGroup.position.x * 0.8, playerGroup.position.y, playerGroup.position.z - 10);
                 }
 
-                // Automatic Shooting if Space Pressed
-                if (keys.space) shootBullet();
+                // Update HUD Altitude & Speed Display
+                document.getElementById('speed-indicator').innerText = `${Math.round(650 + (gameState.isBoosting ? 450 : 0))} KM/H`;
+                document.getElementById('alt-indicator').innerText = `${Math.round(1200 + playerGroup.position.y * 20)} M`;
 
-                // 2. Move Bullets
+                if (keys.space) shootVulcan();
+
+                // Move Vulcan Bullets
                 for (let i = bullets.length - 1; i >= 0; i--) {
                     const b = bullets[i];
-                    b.position.z -= 1.2;
+                    b.position.z -= 1.35;
 
-                    // Bullet Collision with Enemies
                     for (let j = enemies.length - 1; j >= 0; j--) {
                         const enemy = enemies[j];
-                        if (b.position.distanceTo(enemy.group.position) < 2.0) {
+                        if (b.position.distanceTo(enemy.group.position) < 2.2) {
                             enemy.hp -= 20;
                             scene.remove(b);
                             bullets.splice(i, 1);
-                            playSound('hit');
+                            playSound('lock');
 
                             if (enemy.hp <= 0) {
                                 createExplosion(enemy.group.position);
                                 scene.remove(enemy.group);
                                 enemies.splice(j, 1);
-                                gameState.score += 200;
+                                gameState.score += 250;
                                 gameState.kills++;
-                                gameState.ultCharge = Math.min(100, gameState.ultCharge + 15);
+                                gameState.ultCharge = Math.min(100, gameState.ultCharge + 12);
                                 updateHUD();
+                                showRadioDialogue("Radio: Target destroyed! Good hit!");
                             }
                             break;
                         }
                     }
 
-                    if (b && b.position.z < -60) {
+                    if (b && b.position.z < -70) {
                         scene.remove(b);
                         bullets.splice(i, 1);
                     }
                 }
 
-                // 3. Move & AI Enemies
+                // Move Enemies
                 for (let i = enemies.length - 1; i >= 0; i--) {
                     const enemy = enemies[i];
-                    enemy.group.position.z += enemy.type === 'drone' ? 0.25 : 0.15;
+                    enemy.group.position.z += 0.28;
 
-                    // Player Collision
-                    if (!gameState.isDodging && enemy.group.position.distanceTo(playerGroup.position) < 2.2) {
-                        takeDamage(20);
+                    if (enemy.group.position.distanceTo(playerGroup.position) < 2.4) {
+                        takeDamage(25);
                         createExplosion(enemy.group.position);
                         scene.remove(enemy.group);
                         enemies.splice(i, 1);
                         continue;
                     }
 
-                    if (enemy.group.position.z > 20) {
+                    if (enemy.group.position.z > 22) {
                         scene.remove(enemy.group);
                         enemies.splice(i, 1);
                     }
                 }
 
-                // 4. Particles update
+                // Update Explosions & Particles
                 for (let i = particleEffects.length - 1; i >= 0; i--) {
                     const p = particleEffects[i];
                     p.position.x += p.userData.vx;
                     p.position.y += p.userData.vy;
                     p.position.z += p.userData.vz;
                     p.userData.life -= 0.04;
-                    p.scale.multiplyScalar(0.95);
+                    p.scale.multiplyScalar(0.94);
 
                     if (p.userData.life <= 0) {
                         scene.remove(p);
@@ -821,16 +863,16 @@
                     }
                 }
 
-                // Animated Clouds Scroll Effect
-                const clouds = scene.getObjectByName('clouds');
-                if (clouds) {
-                    const pos = clouds.geometry.attributes.position.array;
-                    for (let i = 2; i < pos.length; i += 3) {
-                        pos[i] += 0.8;
-                        if (pos[i] > 30) pos[i] = -120;
-                    }
-                    clouds.geometry.attributes.position.needsUpdate = true;
+                // Move Terrain & Smoke Pillars Backwards to Create Infinite Flight Effect
+                const terrain = scene.getObjectByName("terrain");
+                if (terrain) {
+                    terrain.position.z += 0.45;
+                    if (terrain.position.z > 100) terrain.position.z = 0;
                 }
+                smokePillars.forEach(smoke => {
+                    smoke.position.z += 0.45;
+                    if (smoke.position.z > 80) smoke.position.z = -200;
+                });
             }
 
             renderer.render(scene, camera);
@@ -844,7 +886,7 @@
                 gameState.hp = Math.max(0, gameState.hp - amount);
             }
 
-            playSound('hit');
+            playSound('explosion');
             updateHUD();
 
             if (gameState.hp <= 0) {
@@ -865,23 +907,21 @@
             const btnUlt = document.getElementById('btn-ult');
             if (gameState.ultCharge >= 100) {
                 btnUlt.classList.remove('opacity-50');
-                btnUlt.classList.add('glow-gold', 'animate-pulse');
+                btnUlt.classList.add('glow-orange', 'animate-pulse');
             } else {
                 btnUlt.classList.add('opacity-50');
-                btnUlt.classList.remove('glow-gold', 'animate-pulse');
+                btnUlt.classList.remove('glow-orange', 'animate-pulse');
             }
 
             document.getElementById('score-val').innerText = gameState.score.toString().padStart(6, '0');
             document.getElementById('kill-count').innerText = gameState.kills;
-            document.getElementById('crystal-count').innerText = gameState.crystals;
         }
 
         function pauseGame() {
             gameState.paused = true;
-            document.getElementById('modal-title').innerText = "GAME PAUSED";
+            document.getElementById('modal-title').innerText = "MISI DIHENTIKAN";
             document.getElementById('m-score').innerText = gameState.score;
             document.getElementById('m-kills').innerText = gameState.kills;
-            document.getElementById('m-crystals').innerText = gameState.crystals;
             document.getElementById('modal-screen').classList.remove('hidden');
         }
 
@@ -892,12 +932,11 @@
 
         function gameOver() {
             gameState.running = false;
-            document.getElementById('modal-title').innerText = "MISSION FAILED";
-            document.getElementById('modal-title').className = "font-orbitron font-black text-2xl md:text-3xl text-rose-500 tracking-wider";
+            document.getElementById('modal-title').innerText = "PESAWAT HANCUR";
+            document.getElementById('modal-title').className = "font-orbitron font-black text-2xl md:text-3xl text-red-500 tracking-wider";
             document.getElementById('btn-modal-resume').classList.add('hidden');
             document.getElementById('m-score').innerText = gameState.score;
             document.getElementById('m-kills').innerText = gameState.kills;
-            document.getElementById('m-crystals').innerText = gameState.crystals;
             document.getElementById('modal-screen').classList.remove('hidden');
         }
 
@@ -909,7 +948,6 @@
             document.getElementById('btn-modal-resume').classList.remove('hidden');
         }
 
-        // Initialize Menu View
         window.onload = function() {
             selectPilot('vance');
         };
